@@ -10,8 +10,15 @@ import (
 	"strings"
 )
 
-type Base struct {
+type Players struct {
 	Data     []Data      `json:"data"`
+	Links    Links       `json:"links"`
+	Meta     interface{} `json:"meta"`
+	Included []Data      `json:"included"`
+}
+
+type Match struct {
+	Data     Data        `json:"data"`
 	Links    Links       `json:"links"`
 	Meta     interface{} `json:"meta"`
 	Included []Data      `json:"included"`
@@ -85,14 +92,14 @@ type Stats struct {
 	Kills           int     `json:"kills"`
 	LastKillPoints  int     `json:"lastKillPoints"`
 	LastWinPoints   int     `json:"lastWinPoints"`
-	LongestKill     int     `json:"longestKill"`
+	LongestKill     float32 `json:"longestKill"`
 	MostDamage      int     `json:"mostDamage"`
 	Name            string  `json:"name"`
 	PlayerID        string  `json:"playerId"`
 	RankPoints      int     `json:"rankPoints"`
 	Revives         int     `json:"revives"`
 	RideDistance    float32 `json:"rideDistance"`
-	SwimDistance    int     `json:"swimDistance"`
+	SwimDistance    float32 `json:"swimDistance"`
 	TeamKills       int     `json:"teamKills"`
 	TimeSurvived    float64 `json:"timeSurvived"`
 	VehicleDestroys int     `json:"vehicleDestroys"`
@@ -109,7 +116,7 @@ const apiShard = "steam"
 const apiFilter = "players?filter[playerNames]="
 const apiMatches = "matches"
 
-func GetPlayer(ctx context.Context, playerName string, client *http.Client) (Base, error) {
+func GetPlayer(ctx context.Context, playerName string, client *http.Client) (Players, error) {
 	s := []string{apiHost, apiEndpoint, apiShard, apiFilter}
 	url := strings.Join(s, "/") + playerName
 
@@ -128,7 +135,7 @@ func GetPlayer(ctx context.Context, playerName string, client *http.Client) (Bas
 
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return Base{}, err
+		return Players{}, err
 	}
 	r.Header.Set("Accept", "application/vnd.api+json")
 	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -136,25 +143,25 @@ func GetPlayer(ctx context.Context, playerName string, client *http.Client) (Bas
 
 	resp, err := client.Do(r)
 	if err != nil {
-		return Base{}, err
+		return Players{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return Base{}, err
+		return Players{}, err
 	}
 
 	if resp.StatusCode == 200 {
-		var result Base
+		var result Players
 		err = json.Unmarshal(body, &result)
 		return result, err
 	}
 
-	return Base{}, fmt.Errorf("Undefined status code: %s", string(body))
+	return Players{}, fmt.Errorf("Undefined status code: %s", string(body))
 }
 
-func GetMatch(ctx context.Context, matchID string, client *http.Client) (Base, error) {
+func GetMatch(ctx context.Context, matchID string, client *http.Client) (Match, error) {
 	s := []string{apiHost, apiEndpoint, apiShard, apiMatches, matchID}
 	url := strings.Join(s, "/")
 
@@ -173,7 +180,7 @@ func GetMatch(ctx context.Context, matchID string, client *http.Client) (Base, e
 
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return Base{}, err
+		return Match{}, err
 	}
 	r.Header.Set("Accept", "application/vnd.api+json")
 	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -181,21 +188,20 @@ func GetMatch(ctx context.Context, matchID string, client *http.Client) (Base, e
 
 	resp, err := client.Do(r)
 	if err != nil {
-		return Base{}, err
+		return Match{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return Base{}, err
+		return Match{}, err
 	}
 
 	if resp.StatusCode == 200 {
-		var result Base
+		var result Match
 		err = json.Unmarshal(body, &result)
-		fmt.Println(result)
 		return result, err
 	}
 
-	return Base{}, fmt.Errorf("Undefined status code: %s", string(body))
+	return Match{}, fmt.Errorf("Undefined status code: %s", string(body))
 }
