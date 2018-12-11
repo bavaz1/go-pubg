@@ -10,8 +10,15 @@ import (
 	"strings"
 )
 
-type Base struct {
+type Players struct {
 	Data     []Data      `json:"data"`
+	Links    Links       `json:"links"`
+	Meta     interface{} `json:"meta"`
+	Included []Data      `json:"included"`
+}
+
+type Match struct {
+	Data     Data        `json:"data"`
 	Links    Links       `json:"links"`
 	Meta     interface{} `json:"meta"`
 	Included []Data      `json:"included"`
@@ -85,14 +92,14 @@ type Stats struct {
 	Kills           int     `json:"kills"`
 	LastKillPoints  int     `json:"lastKillPoints"`
 	LastWinPoints   int     `json:"lastWinPoints"`
-	LongestKill     int     `json:"longestKill"`
+	LongestKill     float32 `json:"longestKill"`
 	MostDamage      int     `json:"mostDamage"`
 	Name            string  `json:"name"`
 	PlayerID        string  `json:"playerId"`
 	RankPoints      int     `json:"rankPoints"`
 	Revives         int     `json:"revives"`
 	RideDistance    float32 `json:"rideDistance"`
-	SwimDistance    int     `json:"swimDistance"`
+	SwimDistance    float32 `json:"swimDistance"`
 	TeamKills       int     `json:"teamKills"`
 	TimeSurvived    float64 `json:"timeSurvived"`
 	VehicleDestroys int     `json:"vehicleDestroys"`
@@ -109,55 +116,55 @@ const apiShard = "steam"
 const apiFilter = "players?filter[playerNames]="
 const apiMatches = "matches"
 
-func GetPlayer(ctx context.Context, playerName string, client *http.Client) (Base, error) {
+func GetPlayer(ctx context.Context, playerName string, client *http.Client) (*Players, error) {
 	s := []string{apiHost, apiEndpoint, apiShard, apiFilter}
 	url := strings.Join(s, "/") + playerName
+	apiKey := getApiKey()
 
-	jsonFile, err := os.Open("config.json")
-	if err != nil {
-		panic(err)
-	}
-	defer jsonFile.Close()
+	body, err := request(ctx, "GET", url, apiKey, client)
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var result Players
+	err = json.Unmarshal(body, &result)
+	return &result, err
 
-	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
-
-	apiKey := result["pubgApiKey"]
-
-	r, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return Base{}, err
-	}
-	r.Header.Set("Accept", "application/vnd.api+json")
-	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
-	r = r.WithContext(ctx)
-
-	resp, err := client.Do(r)
-	if err != nil {
-		return Base{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return Base{}, err
-	}
-
-	if resp.StatusCode == 200 {
-		var result Base
-		err = json.Unmarshal(body, &result)
-		return result, err
-	}
-
-	return Base{}, fmt.Errorf("Undefined status code: %s", string(body))
 }
 
-func GetMatch(ctx context.Context, matchID string, client *http.Client) (Base, error) {
+func GetMatch(ctx context.Context, matchID string, client *http.Client) (*Match, error) {
 	s := []string{apiHost, apiEndpoint, apiShard, apiMatches, matchID}
 	url := strings.Join(s, "/")
+	apiKey := getApiKey()
 
+	body, err := request(ctx, "GET", url, apiKey, client)
+
+	var result Match
+	err = json.Unmarshal(body, &result)
+	return &result, err
+}
+
+func request(ctx context.Context, method string, url string, apiKey string, client *http.Client) ([]byte, error) {
+	r, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("Accept", "application/vnd.api+json")
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	r = r.WithContext(ctx)
+
+	resp, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, err
+}
+
+func getApiKey() string {
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
 		panic(err)
@@ -169,33 +176,5 @@ func GetMatch(ctx context.Context, matchID string, client *http.Client) (Base, e
 	var result map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &result)
 
-	apiKey := result["pubgApiKey"]
-
-	r, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return Base{}, err
-	}
-	r.Header.Set("Accept", "application/vnd.api+json")
-	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
-	r = r.WithContext(ctx)
-
-	resp, err := client.Do(r)
-	if err != nil {
-		return Base{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return Base{}, err
-	}
-
-	if resp.StatusCode == 200 {
-		var result Base
-		err = json.Unmarshal(body, &result)
-		fmt.Println(result)
-		return result, err
-	}
-
-	return Base{}, fmt.Errorf("Undefined status code: %s", string(body))
+	return result["pubgApiKey"].(string)
 }
