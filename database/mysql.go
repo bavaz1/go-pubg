@@ -1,0 +1,357 @@
+package database
+
+import (
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/rs/xid"
+)
+
+type MySQL struct {
+	db *sql.DB
+}
+
+func New() Storage {
+	db, err := sql.Open("mysql", "root:toor@/pubg")
+	checkErr(err)
+
+	m := new(MySQL)
+	m.db = db
+	return m
+}
+
+func (m MySQL) GetPlayers() []Player {
+	var (
+		player  Player
+		players []Player
+	)
+
+	rows, err := m.db.Query("select * from Players;")
+
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&player.ID, &player.Name, &player.Email, &player.InGameName)
+		players = append(players, player)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return players
+}
+
+func (m MySQL) CreatePlayer(player Player) Player {
+	player.ID = xid.New().String()
+	stmt, err := m.db.Prepare("insert into Players(id, name, email, inGameName) VALUES (?, ?, ?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec(player.ID, player.Name, player.Email, player.InGameName)
+
+	return player
+}
+
+func (m MySQL) GetPlayer(player Player) Player {
+	rows, err := m.db.Query("select * from Players where id = ?;", player.ID)
+
+	checkErr(err)
+
+	var p Player
+	for rows.Next() {
+		err = rows.Scan(&p.ID, &p.Name, &p.Email, &p.InGameName)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return p
+}
+
+func (m MySQL) UpdatePlayer(player Player) Player {
+	stmt, err := m.db.Prepare("update Players set name=?, email=?, inGameName=? where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(player.Name, player.Email, player.InGameName, player.ID)
+
+	return player
+}
+
+func (m MySQL) DeletePlayer(player Player) Player {
+	stmt, err := m.db.Prepare("delete from Players where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(player.ID)
+	checkErr(err)
+
+	return player
+}
+
+func (m MySQL) GetMatches() []Match {
+	var (
+		match   Match
+		matches []Match
+	)
+
+	rows, err := m.db.Query("select * from Match;")
+
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&match.ID, &match.Duration, &match.MapName, &match.IsCustom, &match.BeginAt, &match.EndAt)
+		matches = append(matches, match)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return matches
+}
+
+func (m MySQL) CreateMatch(match Match) Match {
+	match.ID = xid.New().String()
+	stmt, err := m.db.Prepare("insert into Match(id, duration, mapName, isCustom, beginAt, endAt) VALUES (?, ?, ?, ?, ?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec(match.ID, match.Duration, match.MapName, match.IsCustom, match.BeginAt, match.EndAt)
+
+	return match
+}
+
+func (m MySQL) GetMatch(match Match) Match {
+	rows, err := m.db.Query("select * from Match where id = ?;", match.ID)
+
+	checkErr(err)
+
+	var matchRes Match
+	for rows.Next() {
+		err = rows.Scan(&matchRes.ID, &matchRes.Duration, &matchRes.MapName, &matchRes.IsCustom, &matchRes.BeginAt, &matchRes.EndAt)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return matchRes
+}
+
+func (m MySQL) UpdateMatch(match Match) Match {
+	stmt, err := m.db.Prepare("update Match set duration=?, mapName=?, isCustom=?, beginAt=?, endAt=? where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(match.Duration, match.MapName, match.IsCustom, match.BeginAt, match.EndAt, match.ID)
+
+	return match
+}
+
+func (m MySQL) DeleteMatch(match Match) Match {
+	stmt, err := m.db.Prepare("delete from Match where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(match.ID)
+	checkErr(err)
+
+	return match
+}
+
+func (m MySQL) GetCups() []Cup {
+	var (
+		cup  Cup
+		cups []Cup
+	)
+
+	rows, err := m.db.Query("select * from Cups;")
+
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&cup.ID, &cup.BeginAt, &cup.Winner, &cup.GameMode)
+		cups = append(cups, cup)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return cups
+}
+
+func (m MySQL) CreateCup(cup Cup) Cup {
+	cup.ID = xid.New().String()
+	stmt, err := m.db.Prepare("insert into Cup(id, beginAt, winner, gameMode) VALUES (?, ?, ?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec(cup.ID, cup.BeginAt, cup.Winner, cup.GameMode)
+
+	return cup
+}
+
+func (m MySQL) GetCup(cup Cup) Cup {
+	rows, err := m.db.Query("select * from Cups where id = ?;", cup.ID)
+
+	checkErr(err)
+
+	var c Cup
+	for rows.Next() {
+		err = rows.Scan(&c.ID, &c.BeginAt, &c.Winner, &c.GameMode)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return c
+}
+
+func (m MySQL) UpdateCup(cup Cup) Cup {
+	stmt, err := m.db.Prepare("update Cup set beginAt=?, winner=?, gameMode=? where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(cup.BeginAt, cup.Winner, cup.GameMode, cup.ID)
+
+	return cup
+}
+
+func (m MySQL) DeleteCup(cup Cup) Cup {
+	stmt, err := m.db.Prepare("delete from Cups where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(cup.ID)
+	checkErr(err)
+
+	return cup
+}
+
+func (m MySQL) GetPlayerMatches() []PlayerMatch {
+	var (
+		playerMatch   PlayerMatch
+		playerMatches []PlayerMatch
+	)
+
+	rows, err := m.db.Query("select * from PlayerMatch;")
+
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&playerMatch.ID, &playerMatch.MatchID, &playerMatch.PlayerID, &playerMatch.DBNOs, &playerMatch.Assists, &playerMatch.DamageDealt, &playerMatch.HeadshotKills, &playerMatch.LongestKill, &playerMatch.Kills, &playerMatch.Revives, &playerMatch.RideDistance, &playerMatch.SwimDistance, &playerMatch.WalkDistance, &playerMatch.TimeSurvived, &playerMatch.WinPlace)
+		playerMatches = append(playerMatches, playerMatch)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return playerMatches
+}
+
+func (m MySQL) CreatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
+	playerMatch.ID = xid.New().String()
+	stmt, err := m.db.Prepare("insert into PlayerMatch(id, matchID, playerID, DBNOs, assists, damageDealt, headshotKills, longestKill, kills, revives, rideDistance, swimDistance, walkDistance, timeSurvived, winPlace) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec(playerMatch.ID, playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace)
+
+	return playerMatch
+}
+
+func (m MySQL) GetPlayerMatch(playerMatch PlayerMatch) PlayerMatch {
+	rows, err := m.db.Query("select * from PlayerMatch where id = ?;", playerMatch.ID)
+
+	checkErr(err)
+
+	var p PlayerMatch
+	for rows.Next() {
+		err = rows.Scan(&p.ID, &p.MatchID, &p.PlayerID, &p.DBNOs, &p.Assists, &p.DamageDealt, &p.HeadshotKills, &p.LongestKill, &p.Kills, &p.Revives, &p.RideDistance, &p.SwimDistance, &p.WalkDistance, &p.TimeSurvived, &p.WinPlace)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return p
+}
+
+func (m MySQL) UpdatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
+	stmt, err := m.db.Prepare("update playerMatch set matchID=?, playerID=?, DBNOs=?, assists=?, damageDealt=?, headshotKills=?, longestKill=?, kills=?, revives=?, rideDistance=?, swimDistance=?, walkDistance=?, timeSurvived=?, winPlace=? where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace, playerMatch.ID)
+
+	return playerMatch
+}
+
+func (m MySQL) DeletePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
+	stmt, err := m.db.Prepare("delete from PlayerMatch where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(playerMatch.ID)
+	checkErr(err)
+
+	return playerMatch
+}
+
+func (m MySQL) GetCupMatches() []CupMatch {
+	var (
+		cupMatch   CupMatch
+		cupMatches []CupMatch
+	)
+
+	rows, err := m.db.Query("select * from CupMatch;")
+
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&cupMatch.ID, &cupMatch.CupID, &cupMatch.MatchID)
+		cupMatches = append(cupMatches, cupMatch)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return cupMatches
+}
+
+func (m MySQL) CreateCupMatch(cupMatch CupMatch) CupMatch {
+	cupMatch.ID = xid.New().String()
+	stmt, err := m.db.Prepare("insert into CupMatch(id, matchID, cupID) VALUES (?, ?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec(cupMatch.ID, cupMatch.MatchID, cupMatch.CupID)
+
+	return cupMatch
+}
+
+func (m MySQL) GetCupMatch(cupMatch CupMatch) CupMatch {
+	rows, err := m.db.Query("select * from CupMatch where id = ?;", cupMatch.ID)
+
+	checkErr(err)
+
+	var c CupMatch
+	for rows.Next() {
+		err = rows.Scan(&c.ID, &c.MatchID, &c.CupID)
+		checkErr(err)
+
+	}
+
+	defer rows.Close()
+	return c
+}
+
+func (m MySQL) UpdateCupMatch(cupMatch CupMatch) CupMatch {
+	stmt, err := m.db.Prepare("update CupMatch set matchID=?, cupID=? where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.ID)
+
+	return cupMatch
+}
+
+func (m MySQL) DeleteCupMatch(cupMatch CupMatch) CupMatch {
+	stmt, err := m.db.Prepare("delete from CupMatch where id=?")
+	checkErr(err)
+
+	_, err = stmt.Exec(cupMatch.ID)
+	checkErr(err)
+
+	return cupMatch
+}
+
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}

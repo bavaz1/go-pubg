@@ -1,15 +1,11 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-
-	"github.com/bavaz1/go-pubg/sdk"
+	"github.com/bavaz1/go-pubg/server"
 )
 
 func main() {
-	ctx := context.Background()
+	/* ctx := context.Background()
 	playerName := "bAVAZ1"
 	client := http.Client{}
 	resp, err := sdk.GetPlayer(ctx, playerName, &client)
@@ -22,7 +18,7 @@ func main() {
 	resp2, err := sdk.GetMatch(ctx, bavaz1LastMatch, &client)
 	if err != nil {
 		panic(err)
-	}
+	} */
 
-	fmt.Println(resp2)
+	server.ListenAndServe(8080)
 }
