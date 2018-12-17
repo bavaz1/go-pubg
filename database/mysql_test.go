@@ -15,10 +15,10 @@ func TestPlayers(t *testing.T) {
 		t.Errorf("Name should be 'TestName', instead of %s", p.Name)
 	}
 	if p.Email != "test2@gmail.com" {
-		t.Errorf("Name should be 'test2@gmail.com', instead of %s", p.Email)
+		t.Errorf("Email should be 'test2@gmail.com', instead of %s", p.Email)
 	}
 	if p.InGameName != "bROkedli" {
-		t.Errorf("Name should be 'bROkedli', instead of %s", p.InGameName)
+		t.Errorf("InGameName should be 'bROkedli', instead of %s", p.InGameName)
 	}
 	t.Log(p)
 
@@ -27,10 +27,10 @@ func TestPlayers(t *testing.T) {
 		t.Errorf("Name should be 'TestName', instead of %s", p2.Name)
 	}
 	if p2.Email != "test2@gmail.com" {
-		t.Errorf("Name should be 'test2@gmail.com', instead of %s", p2.Email)
+		t.Errorf("Email should be 'test2@gmail.com', instead of %s", p2.Email)
 	}
 	if p2.InGameName != "bROkedli" {
-		t.Errorf("Name should be 'bROkedli', instead of %s", p2.InGameName)
+		t.Errorf("InGameName should be 'bROkedli', instead of %s", p2.InGameName)
 	}
 	t.Log(p2)
 
@@ -44,10 +44,10 @@ func TestPlayers(t *testing.T) {
 		t.Errorf("Name should be 'ChangedName', instead of %s", p3.Name)
 	}
 	if p3.Email != "test2@gmail.com" {
-		t.Errorf("Name should be 'test2@gmail.com', instead of %s", p3.Email)
+		t.Errorf("Email should be 'test2@gmail.com', instead of %s", p3.Email)
 	}
 	if p3.InGameName != "bro" {
-		t.Errorf("Name should be 'bro', instead of %s", p3.InGameName)
+		t.Errorf("InGameName should be 'bro', instead of %s", p3.InGameName)
 	}
 	t.Log(p3)
 
@@ -58,10 +58,10 @@ func TestPlayers(t *testing.T) {
 		t.Errorf("Name should be 'ChangedName', instead of %s", p4.Name)
 	}
 	if p4.Email != "test2@gmail.com" {
-		t.Errorf("Name should be 'test2@gmail.com', instead of %s", p4.Email)
+		t.Errorf("Email should be 'test2@gmail.com', instead of %s", p4.Email)
 	}
 	if p4.InGameName != "bro" {
-		t.Errorf("Name should be 'bro', instead of %s", p4.InGameName)
+		t.Errorf("InGameName should be 'bro', instead of %s", p4.InGameName)
 	}
 	t.Log(p4)
 
@@ -72,10 +72,10 @@ func TestPlayers(t *testing.T) {
 		t.Errorf("Name should be %s, instead of 'ChangedName'", p4.Name)
 	}
 	if p5.Email == "test2@gmail.com" {
-		t.Errorf("Name should be %s, instead of 'test2@gmail.com'", p4.Email)
+		t.Errorf("Email should be %s, instead of 'test2@gmail.com'", p4.Email)
 	}
 	if p5.InGameName == "bro" {
-		t.Errorf("Name should be %s, instead of 'bro'", p4.InGameName)
+		t.Errorf("InGameName should be %s, instead of 'bro'", p4.InGameName)
 	}
 	t.Log(p5)
 
