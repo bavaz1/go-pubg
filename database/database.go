@@ -15,7 +15,6 @@ type Match struct {
 	MapName  string
 	IsCustom bool
 	BeginAt  time.Time
-	EndAt    time.Time
 }
 
 type Cup struct {

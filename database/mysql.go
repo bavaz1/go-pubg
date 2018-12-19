@@ -12,7 +12,7 @@ type MySQL struct {
 }
 
 func New() Storage {
-	db, err := sql.Open("mysql", "root:toor@/pubg")
+	db, err := sql.Open("mysql", "root:toor@/pubg?parseTime=true")
 	checkErr(err)
 
 	m := new(MySQL)
@@ -47,6 +47,7 @@ func (m MySQL) CreatePlayer(player Player) Player {
 	checkErr(err)
 
 	_, err = stmt.Exec(player.ID, player.Name, player.Email, player.InGameName)
+	checkErr(err)
 
 	return player
 }
@@ -72,6 +73,7 @@ func (m MySQL) UpdatePlayer(player Player) Player {
 	checkErr(err)
 
 	_, err = stmt.Exec(player.Name, player.Email, player.InGameName, player.ID)
+	checkErr(err)
 
 	return player
 }
@@ -92,12 +94,12 @@ func (m MySQL) GetMatches() []Match {
 		matches []Match
 	)
 
-	rows, err := m.db.Query("select * from Match;")
+	rows, err := m.db.Query("select * from `Match`;")
 
 	checkErr(err)
 
 	for rows.Next() {
-		err = rows.Scan(&match.ID, &match.Duration, &match.MapName, &match.IsCustom, &match.BeginAt, &match.EndAt)
+		err = rows.Scan(&match.ID, &match.Duration, &match.MapName, &match.IsCustom, &match.BeginAt)
 		matches = append(matches, match)
 		checkErr(err)
 
@@ -109,22 +111,23 @@ func (m MySQL) GetMatches() []Match {
 
 func (m MySQL) CreateMatch(match Match) Match {
 	match.ID = xid.New().String()
-	stmt, err := m.db.Prepare("insert into Match(id, duration, mapName, isCustom, beginAt, endAt) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := m.db.Prepare("insert into `Match`(id, duration, mapName, isCustom, beginAt) VALUES (?, ?, ?, ?, ?)")
 	checkErr(err)
 
-	_, err = stmt.Exec(match.ID, match.Duration, match.MapName, match.IsCustom, match.BeginAt, match.EndAt)
+	_, err = stmt.Exec(match.ID, match.Duration, match.MapName, match.IsCustom, match.BeginAt)
+	checkErr(err)
 
 	return match
 }
 
 func (m MySQL) GetMatch(match Match) Match {
-	rows, err := m.db.Query("select * from Match where id = ?;", match.ID)
+	rows, err := m.db.Query("select * from `Match` where id = ?;", match.ID)
 
 	checkErr(err)
 
 	var matchRes Match
 	for rows.Next() {
-		err = rows.Scan(&matchRes.ID, &matchRes.Duration, &matchRes.MapName, &matchRes.IsCustom, &matchRes.BeginAt, &matchRes.EndAt)
+		err = rows.Scan(&matchRes.ID, &matchRes.Duration, &matchRes.MapName, &matchRes.IsCustom, &matchRes.BeginAt)
 		checkErr(err)
 
 	}
@@ -134,16 +137,17 @@ func (m MySQL) GetMatch(match Match) Match {
 }
 
 func (m MySQL) UpdateMatch(match Match) Match {
-	stmt, err := m.db.Prepare("update Match set duration=?, mapName=?, isCustom=?, beginAt=?, endAt=? where id=?")
+	stmt, err := m.db.Prepare("update `Match` set duration=?, mapName=?, isCustom=?, beginAt=? where id=?")
 	checkErr(err)
 
-	_, err = stmt.Exec(match.Duration, match.MapName, match.IsCustom, match.BeginAt, match.EndAt, match.ID)
+	_, err = stmt.Exec(match.Duration, match.MapName, match.IsCustom, match.BeginAt, match.ID)
+	checkErr(err)
 
 	return match
 }
 
 func (m MySQL) DeleteMatch(match Match) Match {
-	stmt, err := m.db.Prepare("delete from Match where id=?")
+	stmt, err := m.db.Prepare("delete from `Match` where id=?")
 	checkErr(err)
 
 	_, err = stmt.Exec(match.ID)
@@ -157,13 +161,17 @@ func (m MySQL) GetCups() []Cup {
 		cup  Cup
 		cups []Cup
 	)
+	var winner sql.NullString
 
 	rows, err := m.db.Query("select * from Cups;")
 
 	checkErr(err)
 
 	for rows.Next() {
-		err = rows.Scan(&cup.ID, &cup.BeginAt, &cup.Winner, &cup.GameMode)
+		err = rows.Scan(&cup.ID, &cup.BeginAt, &winner, &cup.GameMode)
+		if winner.Valid {
+			cup.Winner = winner.String
+		}
 		cups = append(cups, cup)
 		checkErr(err)
 
@@ -175,10 +183,11 @@ func (m MySQL) GetCups() []Cup {
 
 func (m MySQL) CreateCup(cup Cup) Cup {
 	cup.ID = xid.New().String()
-	stmt, err := m.db.Prepare("insert into Cup(id, beginAt, winner, gameMode) VALUES (?, ?, ?, ?)")
+	stmt, err := m.db.Prepare("insert into Cups(id, beginAt, winner, gameMode) VALUES (?, ?, ?, ?)")
 	checkErr(err)
 
-	_, err = stmt.Exec(cup.ID, cup.BeginAt, cup.Winner, cup.GameMode)
+	_, err = stmt.Exec(cup.ID, cup.BeginAt, nil, cup.GameMode)
+	checkErr(err)
 
 	return cup
 }
@@ -189,10 +198,14 @@ func (m MySQL) GetCup(cup Cup) Cup {
 	checkErr(err)
 
 	var c Cup
+	var winner sql.NullString
 	for rows.Next() {
-		err = rows.Scan(&c.ID, &c.BeginAt, &c.Winner, &c.GameMode)
+		err = rows.Scan(&c.ID, &c.BeginAt, &winner, &c.GameMode)
 		checkErr(err)
 
+	}
+	if winner.Valid {
+		c.Winner = winner.String
 	}
 
 	defer rows.Close()
@@ -200,10 +213,11 @@ func (m MySQL) GetCup(cup Cup) Cup {
 }
 
 func (m MySQL) UpdateCup(cup Cup) Cup {
-	stmt, err := m.db.Prepare("update Cup set beginAt=?, winner=?, gameMode=? where id=?")
+	stmt, err := m.db.Prepare("update Cups set beginAt=?, winner=?, gameMode=? where id=?")
 	checkErr(err)
 
 	_, err = stmt.Exec(cup.BeginAt, cup.Winner, cup.GameMode, cup.ID)
+	checkErr(err)
 
 	return cup
 }
@@ -245,6 +259,7 @@ func (m MySQL) CreatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
 	checkErr(err)
 
 	_, err = stmt.Exec(playerMatch.ID, playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace)
+	checkErr(err)
 
 	return playerMatch
 }
@@ -266,10 +281,11 @@ func (m MySQL) GetPlayerMatch(playerMatch PlayerMatch) PlayerMatch {
 }
 
 func (m MySQL) UpdatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
-	stmt, err := m.db.Prepare("update playerMatch set matchID=?, playerID=?, DBNOs=?, assists=?, damageDealt=?, headshotKills=?, longestKill=?, kills=?, revives=?, rideDistance=?, swimDistance=?, walkDistance=?, timeSurvived=?, winPlace=? where id=?")
+	stmt, err := m.db.Prepare("update PlayerMatch set matchID=?, playerID=?, DBNOs=?, assists=?, damageDealt=?, headshotKills=?, longestKill=?, kills=?, revives=?, rideDistance=?, swimDistance=?, walkDistance=?, timeSurvived=?, winPlace=? where id=?")
 	checkErr(err)
 
 	_, err = stmt.Exec(playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace, playerMatch.ID)
+	checkErr(err)
 
 	return playerMatch
 }
@@ -311,6 +327,7 @@ func (m MySQL) CreateCupMatch(cupMatch CupMatch) CupMatch {
 	checkErr(err)
 
 	_, err = stmt.Exec(cupMatch.ID, cupMatch.MatchID, cupMatch.CupID)
+	checkErr(err)
 
 	return cupMatch
 }
@@ -322,7 +339,7 @@ func (m MySQL) GetCupMatch(cupMatch CupMatch) CupMatch {
 
 	var c CupMatch
 	for rows.Next() {
-		err = rows.Scan(&c.ID, &c.MatchID, &c.CupID)
+		err = rows.Scan(&c.ID, &c.CupID, &c.MatchID)
 		checkErr(err)
 
 	}
@@ -336,6 +353,7 @@ func (m MySQL) UpdateCupMatch(cupMatch CupMatch) CupMatch {
 	checkErr(err)
 
 	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.ID)
+	checkErr(err)
 
 	return cupMatch
 }
