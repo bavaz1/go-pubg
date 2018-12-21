@@ -1,43 +1,42 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
+	"github.com/bavaz1/go-pubg/database"
 	"github.com/go-chi/chi"
 )
 
-func ListenAndServe(port int) {
+type Server struct {
+	address string
+	storage database.Storage
+}
+
+func (s *Server) Listen() {
 	r := chi.NewRouter()
-	p := strconv.Itoa(port)
-	var sb strings.Builder
-	sb.WriteString(":")
-	sb.WriteString(p)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Route("/players", func(r chi.Router) {
+			r.Post("/{name}", s.createPlayer)
+		})
+		r.Route("/match", func(r chi.Router) {
 
-	r.Route("/players", func(r chi.Router) {
-		r.With(paginate).Get("/", listPlayers) // GET /players
-
-		r.Post("/", createPlayer) // POST /players
-
-		// Subrouters:
-		r.Route("/{inGameName}", func(r chi.Router) {
-			r.Use(PlayerCtx)
-			r.Get("/", getPlayer)
-			r.Put("/", updatePlayer)
-			r.Delete("/", deletePlayer)
 		})
 	})
 
-	http.ListenAndServe(sb.String(), r)
+	http.ListenAndServe(s.address, r)
 }
 
+func (s *Server) createPlayer(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name") // in game name
+
+	// ctx := r.Context()
+
+	w.Write([]byte(fmt.Sprintf("name:%s", name)))
+}
+
+/*
 func PlayerCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		inGameName := chi.URLParam(r, "inGameName")
@@ -60,3 +59,4 @@ func getPlayer(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte(fmt.Sprintf("name:%s", player.Name)))
 }
+*/
