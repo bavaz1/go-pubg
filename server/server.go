@@ -1,7 +1,8 @@
 package server
 
 import (
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/bavaz1/go-pubg/database"
@@ -9,6 +10,7 @@ import (
 )
 
 type Server struct {
+	client  *http.Client
 	address string
 	storage database.Storage
 }
@@ -18,7 +20,7 @@ func (s *Server) Listen() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/players", func(r chi.Router) {
-			r.Post("/{name}", s.createPlayer)
+			r.Post("/", s.createPlayer)
 		})
 		r.Route("/match", func(r chi.Router) {
 
@@ -29,11 +31,31 @@ func (s *Server) Listen() {
 }
 
 func (s *Server) createPlayer(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name") // in game name
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	defer r.Body.Close()
 
-	// ctx := r.Context()
+	var player database.Player
+	err = json.Unmarshal(b, &player)
+	if err != nil {
+		panic(err)
+	}
 
-	w.Write([]byte(fmt.Sprintf("name:%s", name)))
+	p := s.storage.CreatePlayer(player)
+
+	response, err := json.Marshal(p)
+	if err != nil {
+		panic(err)
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write(response)
+}
+
+func (s *Server) createMatch(w http.ResponseWriter, r *http.Request) {
+
 }
 
 /*
