@@ -67,7 +67,7 @@ type Storage interface {
 	UpdateCup(Cup) Cup
 	DeleteCup(Cup) Cup
 
-	GetPlayerMatches() []PlayerMatch
+	GetPlayerMatches(PlayerMatch) []PlayerMatch
 	CreatePlayerMatch(PlayerMatch) PlayerMatch
 	GetPlayerMatch(PlayerMatch) PlayerMatch
 	UpdatePlayerMatch(PlayerMatch) PlayerMatch

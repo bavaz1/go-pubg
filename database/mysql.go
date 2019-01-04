@@ -232,13 +232,12 @@ func (m MySQL) DeleteCup(cup Cup) Cup {
 	return cup
 }
 
-func (m MySQL) GetPlayerMatches() []PlayerMatch {
+func (m MySQL) GetPlayerMatches(playerMatch PlayerMatch) []PlayerMatch {
 	var (
-		playerMatch   PlayerMatch
 		playerMatches []PlayerMatch
 	)
 
-	rows, err := m.db.Query("select * from PlayerMatch;")
+	rows, err := m.db.Query("select * from PlayerMatch where playerID = ?;", playerMatch.PlayerID)
 
 	checkErr(err)
 
@@ -265,7 +264,7 @@ func (m MySQL) CreatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
 }
 
 func (m MySQL) GetPlayerMatch(playerMatch PlayerMatch) PlayerMatch {
-	rows, err := m.db.Query("select * from PlayerMatch where id = ?;", playerMatch.ID)
+	rows, err := m.db.Query("select * from PlayerMatch where playerID = ? and matchID = ?;", playerMatch.PlayerID, playerMatch.MatchID)
 
 	checkErr(err)
 
@@ -281,32 +280,31 @@ func (m MySQL) GetPlayerMatch(playerMatch PlayerMatch) PlayerMatch {
 }
 
 func (m MySQL) UpdatePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
-	stmt, err := m.db.Prepare("update PlayerMatch set matchID=?, playerID=?, DBNOs=?, assists=?, damageDealt=?, headshotKills=?, longestKill=?, kills=?, revives=?, rideDistance=?, swimDistance=?, walkDistance=?, timeSurvived=?, winPlace=? where id=?")
+	stmt, err := m.db.Prepare("update PlayerMatch set matchID=?, playerID=?, DBNOs=?, assists=?, damageDealt=?, headshotKills=?, longestKill=?, kills=?, revives=?, rideDistance=?, swimDistance=?, walkDistance=?, timeSurvived=?, winPlace=? where matchID=? and playerID=?")
 	checkErr(err)
 
-	_, err = stmt.Exec(playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace, playerMatch.ID)
+	_, err = stmt.Exec(playerMatch.MatchID, playerMatch.PlayerID, playerMatch.DBNOs, playerMatch.Assists, playerMatch.DamageDealt, playerMatch.HeadshotKills, playerMatch.LongestKill, playerMatch.Kills, playerMatch.Revives, playerMatch.RideDistance, playerMatch.SwimDistance, playerMatch.WalkDistance, playerMatch.TimeSurvived, playerMatch.WinPlace, playerMatch.MatchID, playerMatch.PlayerID)
 	checkErr(err)
 
 	return playerMatch
 }
 
 func (m MySQL) DeletePlayerMatch(playerMatch PlayerMatch) PlayerMatch {
-	stmt, err := m.db.Prepare("delete from PlayerMatch where id=?")
+	stmt, err := m.db.Prepare("delete from PlayerMatch where playerID=? and matchID=?;")
 	checkErr(err)
 
-	_, err = stmt.Exec(playerMatch.ID)
+	_, err = stmt.Exec(playerMatch.PlayerID, playerMatch.MatchID)
 	checkErr(err)
 
 	return playerMatch
 }
 
-func (m MySQL) GetCupMatches() []CupMatch {
+func (m MySQL) GetCupMatches(cupMatch CupMatch) []CupMatch {
 	var (
-		cupMatch   CupMatch
 		cupMatches []CupMatch
 	)
 
-	rows, err := m.db.Query("select * from CupMatch;")
+	rows, err := m.db.Query("select * from CupMatch where cupID = ?;", cupMatch.CupID)
 
 	checkErr(err)
 
@@ -333,7 +331,7 @@ func (m MySQL) CreateCupMatch(cupMatch CupMatch) CupMatch {
 }
 
 func (m MySQL) GetCupMatch(cupMatch CupMatch) CupMatch {
-	rows, err := m.db.Query("select * from CupMatch where id = ?;", cupMatch.ID)
+	rows, err := m.db.Query("select * from CupMatch where cupID = ? and matchID = ?;", cupMatch.CupID, cupMatch.MatchID)
 
 	checkErr(err)
 
@@ -349,20 +347,20 @@ func (m MySQL) GetCupMatch(cupMatch CupMatch) CupMatch {
 }
 
 func (m MySQL) UpdateCupMatch(cupMatch CupMatch) CupMatch {
-	stmt, err := m.db.Prepare("update CupMatch set matchID=?, cupID=? where id=?")
+	stmt, err := m.db.Prepare("update CupMatch set matchID=?, cupID=? where matchID=?, cupID=?")
 	checkErr(err)
 
-	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.ID)
+	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.MatchID, cupMatch.CupID)
 	checkErr(err)
 
 	return cupMatch
 }
 
 func (m MySQL) DeleteCupMatch(cupMatch CupMatch) CupMatch {
-	stmt, err := m.db.Prepare("delete from CupMatch where id=?")
+	stmt, err := m.db.Prepare("delete from CupMatch where matchID=?, cupID=?")
 	checkErr(err)
 
-	_, err = stmt.Exec(cupMatch.ID)
+	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID)
 	checkErr(err)
 
 	return cupMatch
