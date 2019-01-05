@@ -11,9 +11,9 @@ import (
 )
 
 type Server struct {
-	client  *http.Client
-	address string
-	storage database.Storage
+	Client  *http.Client
+	Address string
+	Storage database.Storage
 }
 
 func (s *Server) Listen() {
@@ -57,11 +57,11 @@ func (s *Server) Listen() {
 		})
 	})
 
-	http.ListenAndServe(s.address, r)
+	http.ListenAndServe(s.Address, r)
 }
 
 func (s *Server) getPlayers(w http.ResponseWriter, r *http.Request) {
-	p := s.storage.GetPlayers()
+	p := s.Storage.GetPlayers()
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -85,7 +85,7 @@ func (s *Server) createPlayer(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := s.storage.CreatePlayer(player)
+	p := s.Storage.CreatePlayer(player)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *Server) getPlayer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	player.ID = params["id"]
 
-	p := s.storage.GetPlayer(player)
+	p := s.Storage.GetPlayer(player)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -130,7 +130,7 @@ func (s *Server) putPlayer(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := s.storage.UpdatePlayer(player)
+	p := s.Storage.UpdatePlayer(player)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -147,7 +147,7 @@ func (s *Server) deletePlayer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	player.ID = params["id"]
 
-	p := s.storage.DeletePlayer(player)
+	p := s.Storage.DeletePlayer(player)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -159,7 +159,7 @@ func (s *Server) deletePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getMatches(w http.ResponseWriter, r *http.Request) {
-	m := s.storage.GetMatches()
+	m := s.Storage.GetMatches()
 
 	response, err := json.Marshal(m)
 	if err != nil {
@@ -183,7 +183,7 @@ func (s *Server) createMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	m := s.storage.CreateMatch(match)
+	m := s.Storage.CreateMatch(match)
 
 	response, err := json.Marshal(m)
 	if err != nil {
@@ -200,7 +200,7 @@ func (s *Server) getMatch(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	match.ID = params["id"]
 
-	m := s.storage.GetMatch(match)
+	m := s.Storage.GetMatch(match)
 
 	response, err := json.Marshal(m)
 	if err != nil {
@@ -228,7 +228,7 @@ func (s *Server) putMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	m := s.storage.UpdateMatch(match)
+	m := s.Storage.UpdateMatch(match)
 
 	response, err := json.Marshal(m)
 	if err != nil {
@@ -245,7 +245,7 @@ func (s *Server) deleteMatch(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	match.ID = params["id"]
 
-	m := s.storage.DeleteMatch(match)
+	m := s.Storage.DeleteMatch(match)
 
 	response, err := json.Marshal(m)
 	if err != nil {
@@ -257,7 +257,7 @@ func (s *Server) deleteMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getCups(w http.ResponseWriter, r *http.Request) {
-	c := s.storage.GetCups()
+	c := s.Storage.GetCups()
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -281,7 +281,7 @@ func (s *Server) createCup(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	c := s.storage.CreateCup(cup)
+	c := s.Storage.CreateCup(cup)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -298,7 +298,7 @@ func (s *Server) getCup(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	cup.ID = params["id"]
 
-	c := s.storage.GetCup(cup)
+	c := s.Storage.GetCup(cup)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -326,7 +326,7 @@ func (s *Server) putCup(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	c := s.storage.UpdateCup(cup)
+	c := s.Storage.UpdateCup(cup)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -343,7 +343,7 @@ func (s *Server) deleteCup(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	cup.ID = params["id"]
 
-	c := s.storage.DeleteCup(cup)
+	c := s.Storage.DeleteCup(cup)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -360,7 +360,7 @@ func (s *Server) getPlayerMatches(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	playerMatch.PlayerID = params["playerId"]
 
-	p := s.storage.GetPlayerMatches(playerMatch)
+	p := s.Storage.GetPlayerMatches(playerMatch)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -384,7 +384,7 @@ func (s *Server) createPlayerMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := s.storage.CreatePlayerMatch(playerMatch)
+	p := s.Storage.CreatePlayerMatch(playerMatch)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -402,7 +402,7 @@ func (s *Server) getPlayerMatch(w http.ResponseWriter, r *http.Request) {
 	playerMatch.MatchID = params["id"]
 	playerMatch.PlayerID = params["playerId"]
 
-	p := s.storage.GetPlayerMatch(playerMatch)
+	p := s.Storage.GetPlayerMatch(playerMatch)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -431,7 +431,7 @@ func (s *Server) putPlayerMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := s.storage.UpdatePlayerMatch(playerMatch)
+	p := s.Storage.UpdatePlayerMatch(playerMatch)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -449,7 +449,7 @@ func (s *Server) deletePlayerMatch(w http.ResponseWriter, r *http.Request) {
 	playerMatch.MatchID = params["id"]
 	playerMatch.PlayerID = params["playerId"]
 
-	p := s.storage.DeletePlayerMatch(playerMatch)
+	p := s.Storage.DeletePlayerMatch(playerMatch)
 
 	response, err := json.Marshal(p)
 	if err != nil {
@@ -466,9 +466,9 @@ func (s *Server) getCupMatches(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	cupMatch.CupID = params["cupId"]
 
-	c := s.storage.GetCupMatch(cupMatch)
+	c := s.Storage.GetCupMatches(cupMatch)
 
-	response, err := json.Marshal(p)
+	response, err := json.Marshal(c)
 	if err != nil {
 		panic(err)
 	}
@@ -490,9 +490,9 @@ func (s *Server) createCupMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	p := s.storage.CreateCupMatch(cupMatch)
+	c := s.Storage.CreateCupMatch(cupMatch)
 
-	response, err := json.Marshal(p)
+	response, err := json.Marshal(c)
 	if err != nil {
 		panic(err)
 	}
@@ -508,7 +508,7 @@ func (s *Server) getCupMatch(w http.ResponseWriter, r *http.Request) {
 	cupMatch.CupID = params["cupId"]
 	cupMatch.MatchID = params["id"]
 
-	c := s.storage.GetCupMatch(cupMatch)
+	c := s.Storage.GetCupMatch(cupMatch)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -537,7 +537,7 @@ func (s *Server) putCupMatch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	c := s.storage.UpdateCupMatch(cupMatch)
+	c := s.Storage.UpdateCupMatch(cupMatch)
 
 	response, err := json.Marshal(c)
 	if err != nil {
@@ -555,7 +555,7 @@ func (s *Server) deleteCupMatch(w http.ResponseWriter, r *http.Request) {
 	cupMatch.CupID = params["cupId"]
 	cupMatch.MatchID = params["id"]
 
-	c := s.storage.DeletePlayerMatch(cupMatch)
+	c := s.Storage.DeleteCupMatch(cupMatch)
 
 	response, err := json.Marshal(c)
 	if err != nil {

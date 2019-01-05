@@ -1,24 +1,20 @@
 package main
 
 import (
+	"net/http"
+
+	"github.com/bavaz1/go-pubg/database"
 	"github.com/bavaz1/go-pubg/server"
 )
 
 func main() {
-	/* ctx := context.Background()
-	playerName := "bAVAZ1"
-	client := http.Client{}
-	resp, err := sdk.GetPlayer(ctx, playerName, &client)
-	if err != nil {
-		panic(err)
+	storage := database.New()
+
+	server := server.Server{
+		&http.Client{},
+		":8080",
+		storage,
 	}
 
-	var bavaz1LastMatch string = resp.Data[0].Relationships.Matches.Data[0].ID
-
-	resp2, err := sdk.GetMatch(ctx, bavaz1LastMatch, &client)
-	if err != nil {
-		panic(err)
-	} */
-
-	server.ListenAndServe(8080)
+	server.Listen()
 }

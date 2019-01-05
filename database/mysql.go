@@ -347,10 +347,10 @@ func (m MySQL) GetCupMatch(cupMatch CupMatch) CupMatch {
 }
 
 func (m MySQL) UpdateCupMatch(cupMatch CupMatch) CupMatch {
-	stmt, err := m.db.Prepare("update CupMatch set matchID=?, cupID=? where matchID=?, cupID=?")
+	stmt, err := m.db.Prepare("update CupMatch set matchID=?, cupID=? where id=?")
 	checkErr(err)
 
-	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.MatchID, cupMatch.CupID)
+	_, err = stmt.Exec(cupMatch.MatchID, cupMatch.CupID, cupMatch.ID)
 	checkErr(err)
 
 	return cupMatch
